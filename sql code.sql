@@ -1,28 +1,76 @@
 
 -- Crypto vs. Traditional Stocks Analysis
 
--- Calculate daily returns for BTC-USD
+-- Base code to calculate Daily Returns for BTC & ETH.
 
 WITH DailyReturns_BTC AS (
     SELECT
-        Date,
-        adj_close AS ClosePrice_BTC,
-        LAG(adj_close) OVER (ORDER BY Date) AS PreviousClosePrice_BTC
+        a.date,
+        a.adj_close AS ClosePrice_BTC,
+        LAG(a.adj_close) OVER (ORDER BY a.date) AS PreviousClosePrice_BTC
     FROM
-        BTCUSDdaily
+        btc_usd a  -- Aliasing BTC_USD as "a"
 ),
 ReturnCalculations_BTC AS (
     SELECT
-        Date,
+        date,
         (ClosePrice_BTC - PreviousClosePrice_BTC) / PreviousClosePrice_BTC AS DailyReturn_BTC
     FROM
         DailyReturns_BTC
     WHERE
         PreviousClosePrice_BTC IS NOT NULL
+),
+DailyReturns_ETH AS (
+    SELECT
+        b.date,
+        b.adj_close AS ClosePrice_ETH,
+        LAG(b.adj_close) OVER (ORDER BY b.date) AS PreviousClosePrice_ETH
+    FROM
+        eth_usd b  -- Aliasing ETH_USD as "b"
+),
+ReturnCalculations_ETH AS (
+    SELECT
+        date,
+        (ClosePrice_ETH - PreviousClosePrice_ETH) / PreviousClosePrice_ETH AS DailyReturn_ETH
+    FROM
+        DailyReturns_ETH
+    WHERE
+        PreviousClosePrice_ETH IS NOT NULL
 )
 
+-- We run the below code with the base code to get the Average Returns of BTC & ETH.
+	
 SELECT
-	date,
-    DailyReturn_BTC
-FROM 
-	ReturnCalculations_BTC
+	AVG(DailyReturn_BTC) AS AvgReturn_BTC,
+	AVG(DailyReturn_ETH) AS AvgReturn_ETH
+FROM
+	ReturnCalculations_BTC btc
+JOIN
+	ReturnCalculations_ETH eth
+ON
+	btc.date = eth.date
+
+
+-- To compute the Standard Deviation of BTC & ETH.
+
+SELECT
+	STDDEV(DailyReturn_BTC) AS Std_BTC,
+	STDDEV(DailyReturn_ETH) AS Std_ETH
+FROM
+	ReturnCalculations_BTC btc
+JOIN
+	ReturnCalculations_ETH eth
+ON
+	btc.date = eth.date
+
+
+-- To compute the Correlation between BTC & ETH
+
+SELECT
+    CORR(DailyReturn_BTC, DailyReturn_ETH) AS Correlation_BTC_ETH
+FROM
+    ReturnCalculations_BTC btc
+JOIN
+    ReturnCalculations_ETH eth
+ON
+    btc.date = eth.date
