@@ -2,6 +2,9 @@
 -- Crypto vs. Traditional Stocks Analysis
 
 -- Base code to calculate Daily Returns for BTC & ETH.
+-- The first part defines the close price and previous close price. 
+-- The second part of code calculates the daily returns with the 2 defined variables. 
+-- Base code is iterated for ETH
 
 WITH DailyReturns_BTC AS (
     SELECT
